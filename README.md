@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎬 YT Watch Party — Real-Time Synchronized Video Streaming
 
 > A production-ready, full-stack watch party application allowing multiple users to watch YouTube videos in real time with sub-second synchronization, role-based access control (RBAC), approval workflows, interactive live chat, and floating emoji reactions.
@@ -281,3 +282,6 @@ node test-e2e.js
    - *Solution*: Dynamic elapsed time computation on server snapshot retrieval: `room.getCurrentTime()`.
 
 ---
+=======
+
+>>>>>>> origin/main
