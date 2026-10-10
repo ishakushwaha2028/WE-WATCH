@@ -6,9 +6,8 @@
 
 ## 🌐 Live Deployment
 
-- 🔗 **Frontend (Vercel):** [https://client-f4g54tqxt-isha42341-gmailcoms-projects.vercel.app/](https://client-f4g54tqxt-isha42341-gmailcoms-projects.vercel.app/)
-- 🔗 **Backend (Render):** [https://yt-watch-party-y3xy.onrender.com/](https://yt-watch-party-y3xy.onrender.com/)
-- 🔗 **Health Check:** [https://yt-watch-party-y3xy.onrender.com/health](https://yt-watch-party-y3xy.onrender.com/health)
+- 🔗 **Frontend (Vercel):** [https://client-f4g54tqxt-isha42341-gmailcoms-projects.vercel.app/](https://we-watch-seven.vercel.app/)
+- 🔗 **Backend (Render):** [https://yt-watch-party-y3xy.onrender.com/](https://we-watch-v3zv.onrender.com)
 
 ---
 
@@ -280,4 +279,3 @@ node test-e2e.js
    - *Problem*: If a user joins 10 minutes into a 30-minute video, standard naive approaches sent `currentTime: 0`.
    - *Solution*: Dynamic elapsed time computation on server snapshot retrieval: `room.getCurrentTime()`.
 
----
