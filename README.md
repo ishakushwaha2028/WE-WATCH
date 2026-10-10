@@ -281,7 +281,3 @@ node test-e2e.js
    - *Solution*: Dynamic elapsed time computation on server snapshot retrieval: `room.getCurrentTime()`.
 
 ---
-
-## 📄 License
-
-MIT License. Built for the YouTube Watch Party System Intern Assignment.
