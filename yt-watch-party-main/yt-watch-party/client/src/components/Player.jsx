@@ -74,7 +74,7 @@ const ROLE_META = {
   viewer: { label: '👁 Viewer', color: '#6B7280' },
 };
 
-export default function Player({ socket, roomId, videoState, canControl, myRole, reactions = [] }) {
+export default function Player({ socket, roomId, videoState, canControl, myRole, myUserId, participants = [], reactions = [] }) {
   const mountRef = useRef(null);
   const playerRef = useRef(null);
   const suppressRef = useRef(false);
@@ -390,13 +390,35 @@ export default function Player({ socket, roomId, videoState, canControl, myRole,
         borderBottom: `1px solid ${currentTheme.colors.cardBorder}`,
         color: currentTheme.colors.textPrimary,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ color: currentTheme.colors.accentGold, fontSize: 15, fontWeight: 900, fontFamily: "'Cinzel', serif" }}>
             WE-WATCH
           </span>
           <span style={{ ...s.roleChip, borderColor: role.color, color: role.color }}>
             {role.label}
           </span>
+          {/* Prominent Host Indicator */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: currentTheme.isLight ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.12)',
+            border: '1px solid rgba(212, 175, 55, 0.55)',
+            borderRadius: 20,
+            padding: '3px 12px',
+            fontSize: 12,
+            boxShadow: '0 0 10px rgba(212, 175, 55, 0.25)',
+          }}>
+            <span style={{ fontSize: 13 }}>👑</span>
+            <span style={{ color: currentTheme.colors.textSecondary, fontWeight: 600 }}>Host:</span>
+            <b style={{ color: currentTheme.colors.accentGold, fontWeight: 800 }}>
+              {(() => {
+                const host = participants.find(p => p.role === 'host');
+                if (!host) return 'Assigning…';
+                return host.userId === myUserId ? 'You' : host.username;
+              })()}
+            </b>
+          </div>
           <span style={{ ...s.roomLabel, color: currentTheme.colors.textSecondary }}>
             Room&nbsp;<b style={{ color: currentTheme.colors.textPrimary, letterSpacing: 2 }}>{roomId}</b>
           </span>
@@ -576,7 +598,7 @@ export default function Player({ socket, roomId, videoState, canControl, myRole,
       )}
 
       {/* ── Real-Time Reaction Bar ── */}
-      <ReactionsBar socket={socket} disabled={!roomId} />
+      <ReactionsBar socket={socket} roomId={roomId} disabled={!roomId} />
     </div>
   );
 }

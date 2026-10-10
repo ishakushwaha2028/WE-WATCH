@@ -27,11 +27,12 @@ export function SocketProvider({ children }) {
     const socket = io(SERVER_URL, {
       transports:        ['websocket', 'polling'],
       reconnectionDelay: 1000,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: 20,
     });
 
-    socket.on('connect',    () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
+    socket.on('connect',       () => setConnected(true));
+    socket.on('disconnect',    () => setConnected(false));
+    socket.on('connect_error', () => setConnected(false));
 
     socket.on('error', ({ message }) => addToast(message, 'error'));
     socket.on('promoted_to_host', ({ message }) => addToast(message, 'success'));

@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useTheme } from '../context/ThemeContext';
+import { useSocket } from '../context/SocketContext';
 import AtmosphereBar from './AtmosphereBar';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
@@ -18,6 +19,7 @@ function generateShortId() {
 
 export default function Lobby({ onJoin }) {
   const { currentTheme, mode } = useTheme();
+  const { connected } = useSocket();
 
   const [tab, setTab] = useState('create');
   const [username, setUsername] = useState('');
@@ -123,6 +125,29 @@ export default function Lobby({ onJoin }) {
             {currentTheme.tagline}
           </p>
         </div>
+
+        {/* Server offline warning banner */}
+        {!connected && (
+          <div style={{
+            margin: '0 auto 16px',
+            maxWidth: 520,
+            padding: '10px 16px',
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.45)',
+            borderRadius: 8,
+            fontSize: 13,
+            color: '#EF4444',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            fontWeight: 600,
+          }}>
+            <span>⚠️</span>
+            <span>Connecting to backend server on port 3001… Make sure backend is running!</span>
+          </div>
+        )}
 
         {/* Invite Banner */}
         {inviteCode && tab === 'join' && (

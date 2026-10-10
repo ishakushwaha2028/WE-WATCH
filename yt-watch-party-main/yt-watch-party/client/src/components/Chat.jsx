@@ -40,7 +40,8 @@ export default function Chat({ socket, roomId, messages, myUserId }) {
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
-    socket.emit('chat_message', { text: trimmed });
+    if (!socket) return;
+    socket.emit('chat_message', { text: trimmed, roomId });
     setText('');
   }
 
@@ -48,7 +49,7 @@ export default function Chat({ socket, roomId, messages, myUserId }) {
     <div style={{ ...styles.wrapper, height: collapsed ? 44 : 260 }}>
       {/* ── Header ── */}
       <button style={styles.header} onClick={() => setCollapsed(c => !c)}>
-        <span style={{ fontWeight: 700, fontSize: 13 }}>💬 Chat</span>
+        <span style={{ fontWeight: 700, fontSize: 13 }}>💬 Live Chat</span>
         {messages.length > 0 && collapsed && (
           <span style={styles.badge}>{messages.length}</span>
         )}
@@ -68,26 +69,46 @@ export default function Chat({ socket, roomId, messages, myUserId }) {
             )}
             {messages.map((msg, i) => {
               const isMe = msg.userId === myUserId;
+              const isHost = msg.role === 'host';
               return (
-                <div key={i} style={{ ...styles.msgRow, justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
+                <div key={msg.id || i} style={{ ...styles.msgRow, justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
                   <div style={{
                     ...styles.bubble,
                     background: isMe
                       ? (currentTheme.isLight ? 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)' : 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)')
                       : (currentTheme.isLight ? '#FFFBF0' : 'rgba(15, 23, 42, 0.85)'),
-                    borderColor: isMe
-                      ? 'rgba(212, 175, 55, 0.6)'
-                      : (currentTheme.isLight ? 'rgba(180, 130, 60, 0.4)' : 'rgba(255, 255, 255, 0.15)'),
-                    boxShadow: isMe ? '0 2px 10px rgba(0,0,0,0.25)' : 'none',
+                    borderColor: isHost
+                      ? 'rgba(212, 175, 55, 0.8)'
+                      : isMe
+                        ? 'rgba(212, 175, 55, 0.6)'
+                        : (currentTheme.isLight ? 'rgba(180, 130, 60, 0.4)' : 'rgba(255, 255, 255, 0.15)'),
+                    boxShadow: isHost ? '0 0 12px rgba(212, 175, 55, 0.25)' : isMe ? '0 2px 10px rgba(0,0,0,0.25)' : 'none',
                   }}>
                     <div style={styles.msgMeta}>
                       <span style={{
-                        color: isMe ? '#FDE68A' : ROLE_COLORS[msg.role],
+                        color: isHost ? '#F59E0B' : isMe ? '#FDE68A' : ROLE_COLORS[msg.role],
                         fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: 0.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
                       }}>
                         {ROLE_ICONS[msg.role]} {msg.username}
+                        {isHost && (
+                          <span style={{
+                            background: 'linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)',
+                            color: '#000',
+                            fontSize: 9,
+                            fontWeight: 900,
+                            padding: '1px 5px',
+                            borderRadius: 4,
+                            marginLeft: 4,
+                            letterSpacing: 0.5,
+                          }}>
+                            HOST
+                          </span>
+                        )}
                       </span>
                       <span style={{
                         color: isMe ? 'rgba(255, 255, 255, 0.75)' : (currentTheme.isLight ? '#78654E' : '#94A3B8'),
@@ -126,7 +147,7 @@ export default function Chat({ socket, roomId, messages, myUserId }) {
               <button
                 key={emoji}
                 type="button"
-                onClick={() => socket?.emit('send_reaction', { emoji })}
+                onClick={() => socket?.emit('send_reaction', { emoji, roomId })}
                 style={{
                   background: 'transparent',
                   border: 'none',

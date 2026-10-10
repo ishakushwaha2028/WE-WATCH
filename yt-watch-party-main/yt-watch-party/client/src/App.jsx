@@ -21,6 +21,7 @@ function Inner() {
   // ── State ────────────────────────────────────────────────────────────────
   const [roomId,       setRoomId]       = useState(null);
   const [myUserId,     setMyUserId]     = useState(null);
+  const [myUsername,   setMyUsername]   = useState('');
   const [myRole,       setMyRole]       = useState('participant');
   const [participants, setParticipants] = useState([]);
   const [videoState,   setVideoState]   = useState({
@@ -34,7 +35,7 @@ function Inner() {
   useEffect(() => {
     if (!socket) return;
 
-    const onSyncState = ({ videoId, playing, currentTime, participants: ps, pendingRequests: prs }) => {
+    const onSyncState = ({ videoId, playing, currentTime, participants: ps, pendingRequests: prs, messages: msgs }) => {
       setVideoState({
         videoId:     videoId      || '',
         playing:     playing      ?? false,
@@ -44,6 +45,9 @@ function Inner() {
       setParticipants(list);
       if (Array.isArray(prs)) {
         setPendingReqs(prs);
+      }
+      if (Array.isArray(msgs) && msgs.length > 0) {
+        setMessages(msgs);
       }
       setMyUserId(prev => {
         const me = list.find(p => p.userId === prev);
@@ -185,11 +189,28 @@ function Inner() {
     if (me) setMyRole(me.role);
   }, [participants, myUserId]);
 
+  // Re-join room if socket reconnects
+  useEffect(() => {
+    if (!socket) return;
+    const onConnect = () => {
+      if (roomId && myUsername && myUserId) {
+        socket.emit('join_room', {
+          roomId,
+          username: myUsername,
+          userId: myUserId,
+        });
+      }
+    };
+    socket.on('connect', onConnect);
+    return () => socket.off('connect', onConnect);
+  }, [socket, roomId, myUsername, myUserId]);
+
   // ── Actions ──────────────────────────────────────────────────────────────
   const joinRoom = useCallback((id, username, userId) => {
     setRoomId(id);
+    setMyUsername(username);
     setMyUserId(userId);
-    socket.emit('join_room', {
+    socket?.emit('join_room', {
       roomId: id,
       username,
       userId,
@@ -252,9 +273,6 @@ function Inner() {
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
-      {/* Real-time floating emojis popping up across the room */}
-      <ReactionsOverlay reactions={reactions} />
-
       {/* Background theme tint overlay */}
       <div style={{
         position: 'absolute',
@@ -275,6 +293,8 @@ function Inner() {
             videoState={videoState}
             canControl={canControl}
             myRole={myRole}
+            myUserId={myUserId}
+            participants={participants}
             reactions={reactions}
           />
 
@@ -333,6 +353,9 @@ function Inner() {
           onLeave={leaveRoom}
         />
       </div>
+
+      {/* Real-time floating emojis popping up across the entire room with top z-index */}
+      <ReactionsOverlay reactions={reactions} />
     </div>
       )}
     </>

@@ -43,8 +43,17 @@ class MessageHandler {
 
   // ── Context extraction ──────────────────────────────────────────────────────
 
-  getContext(socket) {
-    const roomId = socket.data?.roomId;
+  getContext(socket, explicitRoomId) {
+    let roomId = explicitRoomId || socket.data?.roomId;
+    if (!roomId) {
+      for (const r of this.roomManager.getAllRooms()) {
+        if (r.participants.has(socket.id)) {
+          roomId = r.roomId;
+          socket.data.roomId = roomId;
+          break;
+        }
+      }
+    }
     if (!roomId) return {};
     const room = this.roomManager.getRoom(roomId);
     if (!room) return {};
@@ -80,6 +89,7 @@ class MessageHandler {
       ...room.getVideoState(),
       participants: room.getParticipantList(),
       pendingRequests: participant.canControlPlayback() ? room.getActiveControlRequests() : [],
+      messages: room.messages || [],
     });
 
     // Notify room of new participant
@@ -377,9 +387,12 @@ class MessageHandler {
     room.broadcastExcept(socket.id, 'time_sync', { currentTime });
   }
 
-  handleReaction(socket, { emoji } = {}) {
-    const { room, participant } = this.getContext(socket);
-    if (!room || !participant) return;
+  handleReaction(socket, { emoji, roomId } = {}) {
+    const { room, participant } = this.getContext(socket, roomId);
+    if (!room || !participant) {
+      console.warn(`[reaction] ignored: socket ${socket.id} not in room`);
+      return;
+    }
     if (!emoji || typeof emoji !== 'string') return;
 
     const reaction = {
@@ -393,12 +406,16 @@ class MessageHandler {
     room.broadcast('reaction', reaction);
   }
 
-  handleChatMessage(socket, { text } = {}) {
-    const { room, participant } = this.getContext(socket);
-    if (!room || !participant) return;
+  handleChatMessage(socket, { text, roomId } = {}) {
+    const { room, participant } = this.getContext(socket, roomId);
+    if (!room || !participant) {
+      console.warn(`[chat] rejected: socket ${socket.id} not in room`);
+      return socket.emit('error', { message: 'Message sending failed: not connected to room. Please rejoin.' });
+    }
     if (!text || !text.trim()) return;
 
     const msg = {
+      id: uuidv4(),
       userId: participant.userId,
       username: participant.username,
       role: participant.role,

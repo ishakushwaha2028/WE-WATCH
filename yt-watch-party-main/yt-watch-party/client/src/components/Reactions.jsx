@@ -31,10 +31,10 @@ export function ReactionsOverlay({ reactions = [] }) {
   );
 }
 
-export function ReactionsBar({ socket, disabled }) {
+export function ReactionsBar({ socket, roomId, disabled }) {
   function sendReaction(emoji) {
     if (disabled || !socket) return;
-    socket.emit('send_reaction', { emoji });
+    socket.emit('send_reaction', { emoji, roomId });
   }
 
   return (
@@ -58,11 +58,11 @@ export function ReactionsBar({ socket, disabled }) {
   );
 }
 
-export default function Reactions({ socket, reactions = [], disabled }) {
+export default function Reactions({ socket, roomId, reactions = [], disabled }) {
   return (
     <>
       <ReactionsOverlay reactions={reactions} />
-      <ReactionsBar socket={socket} disabled={disabled} />
+      <ReactionsBar socket={socket} roomId={roomId} disabled={disabled} />
     </>
   );
 }
@@ -73,19 +73,19 @@ const styles = {
     inset: 0,
     pointerEvents: 'none',
     overflow: 'hidden',
-    zIndex: 9999, // High z-index so emojis always pop above video and cards!
+    zIndex: 99999, // Supreme z-index so emojis always pop above video and panels!
   },
   floatingItem: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 270, // Start above the chat panel so it is immediately visible
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    background: 'rgba(8, 12, 22, 0.88)',
-    border: '1.5px solid rgba(212, 175, 55, 0.55)',
-    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.75), 0 0 16px rgba(212, 175, 55, 0.35)',
-    padding: '6px 14px',
-    borderRadius: 24,
+    background: 'rgba(10, 15, 26, 0.94)',
+    border: '1.5px solid rgba(212, 175, 55, 0.7)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.45)',
+    padding: '8px 16px',
+    borderRadius: 30,
     animation: 'floatUp 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
     transformOrigin: 'bottom center',
   },
